@@ -1,0 +1,83 @@
+version: "3.8"
+
+services:
+  emqx:
+    image: emqx/emqx:latest
+    container_name: emqx
+    restart: unless-stopped
+    ports:
+      - "1883:1883"
+      - "8883:8883"
+      - "8083:8083"
+      - "8084:8084"
+      - "18083:18083"
+    environment:
+      - EMQX_NAME=emqx
+      - EMQX_LOADED_PLUGINS=emqx_dashboard
+    volumes:
+      - emqx_data:/opt/emqx/data
+      - emqx_log:/opt/emqx/log
+    networks:
+      - emqxnet
+
+  nodered:
+    image: nodered/node-red:latest
+    container_name: node-red
+    restart: unless-stopped
+    ports:
+      - "1880:1880"
+    environment:
+      - TZ=Asia/Bangkok
+    volumes:
+      - node_red_data:/data
+    depends_on:
+      - emqx
+      - mysql
+    networks:
+      - emqxnet
+ #   command: >
+  #    bash -c "
+   #   npm install --prefix /data node-red-node-mysql &&
+    #  npm start
+     # "
+
+  mysql:
+    image: mysql:8.0
+    container_name: mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: root123
+      MYSQL_DATABASE: iot
+      MYSQL_USER: user
+      MYSQL_PASSWORD: user123
+    volumes:
+      - mysql_data:/var/lib/mysql
+    ports:
+      - "3306:3306"
+    networks:
+      - emqxnet
+
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin:latest
+    container_name: phpmyadmin
+    restart: unless-stopped
+    ports:
+      - "8080:80"
+    environment:
+      PMA_HOST: mysql
+      PMA_USER: root
+      PMA_PASSWORD: root123
+    depends_on:
+      - mysql
+    networks:
+      - emqxnet
+
+volumes:
+  emqx_data:
+  emqx_log:
+  node_red_data:
+  mysql_data:
+
+networks:
+  emqxnet:
+    driver: bridge
