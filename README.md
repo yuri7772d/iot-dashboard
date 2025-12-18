@@ -5,17 +5,6 @@
  - mysql
  - esp32 (pubsubclient,bme_280)
 
-## clone-git
-
-```bash
-
-git clone https://github.com/yuri7772d/iot-dashboard.git
-
-cd iot-dashboard
-
-
-```
-
 ## init docker
  - emqx
  - node-red
